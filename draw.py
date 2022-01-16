@@ -1,6 +1,7 @@
 # draw a board
 
 import random, sys, pygame
+from pygame.locals import *
 
 # There are different box sizes, number of boxes, and
 # life depending on the "board size" setting selected.
@@ -22,8 +23,8 @@ FPS = 30
 WINDOWWIDTH = int(640 * SIZE_MULTI)
 WINDOWHEIGHT = int(720 * SIZE_MULTI)
 boxSize = MEDIUMBOXSIZE
-PALETTEGAPSIZE = int(10 * SIZE_MULTI)
-PALETTESIZE = int(45 * SIZE_MULTI)
+pegGAPSIZE = int(10 * SIZE_MULTI)
+pegSIZE = int(45 * SIZE_MULTI)
 EASY = 0   # arbitrary but unique value
 MEDIUM = 1 # arbitrary but unique value
 HARD = 2   # arbitrary but unique value
@@ -45,7 +46,14 @@ ORANGE   = (255, 128,   0)
 PURPLE   = (255,   0, 255)
 
 bgColor = (200, 200, 200) 
+
+pegColors = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE)
+
+print("debug one")
+
+
 def main():
+    print("debug 2")
     global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE
 
     pygame.init()
@@ -53,18 +61,22 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 
     pygame.display.set_caption('Draw Board')
+    print("debug 3")
 
     while True: # main game loop
-        paletteClicked = None
+        pegClicked = None
         resetGame = False
 
         # Draw the screen.
         DISPLAYSURF.fill(bgColor)
+        drawpegs()
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
         checkForQuit()
+        # events
 
+        pygame.display.update()
 
 def checkForQuit():
     # Terminates the program if there are any QUIT or escape key events.
@@ -77,4 +89,15 @@ def checkForQuit():
             sys.exit()
         pygame.event.post(event) # put the other KEYUP event objects back
 
+def drawpegs():
+    # Draws the six color pegs at the bottom of the screen.
+    numColors = len(pegColors)
+    xmargin = int((WINDOWWIDTH - ((pegSIZE * numColors) + (pegGAPSIZE * (numColors - 1)))) / 2)
+    for i in range(numColors):
+        left = xmargin + (i * pegSIZE) + (i * pegGAPSIZE)
+        top = WINDOWHEIGHT - pegSIZE - 10
+        pygame.draw.rect(DISPLAYSURF, pegColors[i], (left, top, pegSIZE, pegSIZE))
+        pygame.draw.rect(DISPLAYSURF, bgColor,   (left + 2, top + 2, pegSIZE - 4, pegSIZE - 4), 2)
  
+if __name__ == '__main__':
+    main()
