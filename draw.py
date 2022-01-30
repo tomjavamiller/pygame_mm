@@ -43,11 +43,13 @@ GREEN    = (  0, 255,   0)
 BLUE     = (  0,   0, 255)
 YELLOW   = (255, 255,   0)
 ORANGE   = (255, 128,   0)
-PURPLE   = (255,   0, 255)
+# PURPLE = (255,   0, 255)
+PURPLE   = (138,  43, 226)
+BTGREEN  = (204, 255,   0)
 
 bgColor = (200, 200, 200) 
 
-pegColors = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE)
+pegColors = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BTGREEN, BLACK, WHITE)
 
 print("debug one")
 
@@ -61,22 +63,75 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 
     pygame.display.set_caption('Draw Board')
+    life = maxLife
+    lastPaletteClicked = None
+    mousex = 0
+    mousey = 0
+
     print("debug 3")
 
+    DISPLAYSURF.fill(bgColor)
     while True: # main game loop
         pegClicked = None
         resetGame = False
 
         # Draw the screen.
-        DISPLAYSURF.fill(bgColor)
+        # DISPLAYSURF.fill(bgColor)
         drawpegs()
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
         checkForQuit()
         # events
+        for event in pygame.event.get(): # event handling loop
+            if event.type == MOUSEBUTTONUP:
+                mousex, mousey = event.pos
+                # check if a palette button was clicked
+                pegClicked = getColorOfPaletteAt(mousex, mousey)
+            elif event.type == KEYDOWN:
+                # support up to 9 palette keys
+                try:
+                    key = int(event.unicode)
+                except:
+                    key = None
+
+                if key != None and key > 0 and key <= len(pegColors):
+                    pegClicked = key - 1
+
+        if pegClicked != None and pegClicked != lastPaletteClicked:
+            # a palette button was clicked that is different from the
+            # last palette button clicked (this check prevents the player
+            # from accidentally clicking the same palette twice)
+            lastPaletteClicked = pegClicked
+            
+            drawTry(pegClicked)
+            #floodAnimation(mainBoard, pegClicked)
+            life -= 1
+
+            resetGame = False
+            # if hasWon(mainBoard):
+            #     for i in range(4): # flash border 4 times
+            #         flashBorderAnimation(WHITE, mainBoard)
+            #     resetGame = True
+            #     pygame.time.wait(2000) # pause so the player can bask in victory
+            # elif life == 0:
+            #     # life is zero, so player has lost
+            #     drawLifeMeter(0)
+            #     pygame.display.update()
+            #     pygame.time.wait(400)
+            #     for i in range(4):
+            #         flashBorderAnimation(BLACK, mainBoard)
+            #     resetGame = True
+            #     pygame.time.wait(2000) # pause so the player can suffer in their defeat
+
+        if resetGame:
+            # start a new game
+            mainBoard = generateRandomBoard(boardWidth, boardHeight, difficulty)
+            life = maxLife
+            lastPaletteClicked = None
 
         pygame.display.update()
+        FPSCLOCK.tick(FPS)
 
 def checkForQuit():
     # Terminates the program if there are any QUIT or escape key events.
@@ -89,15 +144,43 @@ def checkForQuit():
             sys.exit()
         pygame.event.post(event) # put the other KEYUP event objects back
 
+def drawPeg(pos, color, size=40):
+    for i in range(1,size):
+       wvalue = int(i*250/size)
+       pygame.draw.circle(screen, (max(wvalue,color[0]),max(wvalue,color[1]),max(wvalue,color[2])), pos, size-i )
+
+def drawTry(tryNum):
+    # Draws one guessLine
+    top = WINDOWHEIGHT - 2 * pegSIZE - 10
+    left = 70 # + (i * pegSIZE) + (i * pegGAPSIZE)
+    pygame.draw.circle(DISPLAYSURF, pegColors[tryNum], [left, top], 40 )
+    #pygame.draw.rect(DISPLAYSURF, pegColors[i], (left, top, pegSIZE, pegSIZE))
+    pygame.display.update()
+    FPSCLOCK.tick(FPS)
+
 def drawpegs():
     # Draws the six color pegs at the bottom of the screen.
-    numColors = len(pegColors)
-    xmargin = int((WINDOWWIDTH - ((pegSIZE * numColors) + (pegGAPSIZE * (numColors - 1)))) / 2)
-    for i in range(numColors):
+    numPegs = len(pegColors)
+    xmargin = int((WINDOWWIDTH - ((pegSIZE * numPegs) + (pegGAPSIZE * (numPegs - 1)))) / 2)
+    for i in range(numPegs):
         left = xmargin + (i * pegSIZE) + (i * pegGAPSIZE)
         top = WINDOWHEIGHT - pegSIZE - 10
         pygame.draw.rect(DISPLAYSURF, pegColors[i], (left, top, pegSIZE, pegSIZE))
         pygame.draw.rect(DISPLAYSURF, bgColor,   (left + 2, top + 2, pegSIZE - 4, pegSIZE - 4), 2)
+
+def getColorOfPaletteAt(x, y):
+    # Returns the index of the color in pegColors that the x and y parameters
+    # are over. Returns None if x and y are not over any palette.
+    numColors = len(pegColors)
+    xmargin = int((WINDOWWIDTH - ((pegSIZE * numColors) + (pegGAPSIZE * (numColors - 1)))) / 2)
+    top = WINDOWHEIGHT - pegSIZE - 10
+    for i in range(numColors):
+        # Find out if the mouse click is inside any of the palettes.
+        left = xmargin + (i * pegSIZE) + (i * pegGAPSIZE)
+        r = pygame.Rect(left, top, pegSIZE, pegSIZE)
+        if r.collidepoint(x, y):
+            return i
+    return None # no palette exists at these x, y coordinates
  
 if __name__ == '__main__':
     main()
