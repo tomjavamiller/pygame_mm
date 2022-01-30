@@ -14,14 +14,14 @@ def drawPeg(pos, color, size=40):
 
 
 # Define the colors we will use in RGB format
-BLACK = (  0,   0,   0)
-WHITE = (255, 255, 255)
-BLUE =  (  0,   0, 255)
-GREEN = (  0, 255,   0)
-RED =   (255,   0,   0)
-YELLOW   = (255, 255,   0)
-ORANGE   = (255, 128,   0)
-PURPLE   = (200, 0, 220)
+BLACK  = (  0,   0,   0)
+WHITE  = (255, 255, 255)
+BLUE   = (  0,   0, 255)
+GREEN  = (  0, 255,   0)
+RED    = (255,   0,   0)
+YELLOW = (255, 255,   0)
+ORANGE = (255, 128,   0)
+PURPLE = (200,   0, 220)
  
 # Set the height and width of the screen
 size = [700, 500]
@@ -68,9 +68,9 @@ while not done:
     # pygame.draw.rect(screen, BLACK, [150, 10, 50, 20])
 
     # Draw a rectangle with rounded corners
-    #pygame.draw.rect(screen, GREEN, [115, 210, 70, 40], 10, border_radius=15)
-    #pygame.draw.rect(screen, RED, [135, 260, 50, 30], 0, border_radius=10, border_top_left_radius=0,
-    #                 border_bottom_right_radius=15)
+    # pygame.draw.rect(screen, GREEN, [115, 210, 70, 40], 10)  , border_radius=15)
+    # pygame.draw.rect(screen, RED, [135, 260, 50, 30], 0, border_radius=10, border_top_left_radius=0,
+    #                  border_bottom_right_radius=15)
 
     # Draw an ellipse outline, using a rectangle as the outside boundaries
     # pygame.draw.ellipse(screen, RED, [225, 10, 50, 20], 2) 
@@ -83,9 +83,9 @@ while not done:
   
     # Draw an arc as part of an ellipse. 
     # Use radians to determine what angle to draw.
-                                 #left top width heigth
+    # left top width heigth
     
-    #pygame.draw.arc(screen, BLACK,[210+i, 75+i, 150-i, 125-i], 0, pi/2, 2)
+    # pygame.draw.arc(screen, BLACK,[210+i, 75+i, 150-i, 125-i], 0, pi/2, 2)
 
     for i in range(1,120):
         rect = [210+int(i/2), 75+int(i/2), 150-i, 125-i]

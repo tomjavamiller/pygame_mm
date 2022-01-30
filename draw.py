@@ -34,6 +34,9 @@ maxLife = MEDIUMMAXLIFE
 boardWidth = MEDIUMBOARDSIZE
 boardHeight = MEDIUMBOARDSIZE
 
+numRows = 12
+numPgPerRow = 5
+
 #            R    G    B
 WHITE    = (255, 255, 255)
 DARKGRAY = ( 70,  70,  70)
@@ -47,17 +50,33 @@ ORANGE   = (255, 128,   0)
 PURPLE   = (138,  43, 226)
 BTGREEN  = (204, 255,   0)
 
-bgColor = (200, 200, 200) 
+bgColor  = (200, 200, 200) 
+rowBgColor=(160, 160, 160)
 
-pegColors = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BTGREEN, BLACK, WHITE)
-
-print("debug one")
+pegColors = (bgColor, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BTGREEN, BLACK, WHITE)
+pegColorStrs = ("00", "RD", "GR", "BL", "YW", "OR", "PR", "BG", "BK", "WH")
 
 
 def main():
-    print("debug 2")
-    global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE
+    global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE, A_GUESS 
+    global dummyCurrentNum
+    dummyCurrentNum = 0
+    A_GUESS = [0, 0, 0, 0, 0]
 
+    # create the blank board
+    #   --------------------------
+    # # | 0  1 ... numPgPerRow-1 |  numRows-1
+    # .
+    # .
+    #
+    # 3 | 0  1 ... numPgPerRow-1 |
+    # 2 | 0  1 ... numPgPerRow-1 |
+    # 1 | 0  1 ... numPgPerRow-1 |
+    # 0 | 0  1 ... numPgPerRow-1 |
+    #   --------------------------
+
+    theBoard = [ [0]*numPgPerRow for _ in range(numRows)]
+    
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
@@ -65,12 +84,13 @@ def main():
     pygame.display.set_caption('Draw Board')
     life = maxLife
     lastPaletteClicked = None
+
     mousex = 0
     mousey = 0
 
-    print("debug 3")
-
     DISPLAYSURF.fill(bgColor)
+    drawBoard(theBoard)
+
     while True: # main game loop
         pegClicked = None
         resetGame = False
@@ -98,13 +118,20 @@ def main():
                 if key != None and key > 0 and key <= len(pegColors):
                     pegClicked = key - 1
 
-        if pegClicked != None and pegClicked != lastPaletteClicked:
+        if pegClicked != None:  # and pegClicked != lastPaletteClicked:
             # a palette button was clicked that is different from the
             # last palette button clicked (this check prevents the player
             # from accidentally clicking the same palette twice)
             lastPaletteClicked = pegClicked
             
             drawTry(pegClicked)
+   
+            theBoard[int(dummyCurrentNum/numPgPerRow)][dummyCurrentNum%numPgPerRow] = pegClicked
+            drawBoard(theBoard)
+            dummyCurrentNum = dummyCurrentNum + 1
+            #A_GUESS = A_GUESS[1:len(A_GUESS)] + [pegClicked]
+            #drawOneGuess([150,150], A_GUESS)
+            
             #floodAnimation(mainBoard, pegClicked)
             life -= 1
 
@@ -145,9 +172,10 @@ def checkForQuit():
         pygame.event.post(event) # put the other KEYUP event objects back
 
 def drawPeg(pos, color, size=40):
-    for i in range(1,size):
-       wvalue = int(i*250/size)
-       pygame.draw.circle(screen, (max(wvalue,color[0]),max(wvalue,color[1]),max(wvalue,color[2])), pos, size-i )
+    pygame.draw.circle(DISPLAYSURF, color, pos, size  )
+    # for i in range(1,size):
+    #    wvalue = int(i*250/size)
+    #    pygame.draw.circle(DISPLAYSURF, (max(wvalue,color[0]),max(wvalue,color[1]),max(wvalue,color[2])), pos, size-i )
 
 def drawTry(tryNum):
     # Draws one guessLine
@@ -158,8 +186,40 @@ def drawTry(tryNum):
     pygame.display.update()
     FPSCLOCK.tick(FPS)
 
+def drawBoard(theBoard):
+    """ Draws the main board from the matrix of ints
+        :param theBoard is a 2 dim array of ints
+    """
+    end = len(theBoard) - 1
+    for i in range(end+1):
+       drawOneGuess([100,20 + (i*90)], theBoard[end - i]) # 0 at the bottom
+
+def drawOneGuess(pos, pegsIdx):
+    """ Draws one sequence of pegsIdx (or blank spzce)
+       Print a box around ~5 pegsIdx  -------------
+                                      | * * * * * |
+
+       :param pos: [left, top] where to put on screen
+       :param pegsIdx: five ints. 5 peg color array offsets in pegColors 
+    """ 
+    #print("-------------------")
+    #print("| ", end="")
+    #for i in range(len(pegsIdx)):
+    #   print(pegColorStrs[pegsIdx[i]], end=" ")
+    #print(" |")
+    #print("-------------------")
+    pygame.draw.rect(DISPLAYSURF, rowBgColor, [pos, [int(1.2*pegSIZE)*len(pegsIdx), pegSIZE]])
+    pegGSize = 30
+    pegGRec = [pos[0] + int(1.5*pegGSize), pos[1] + pegGSize + int(pegSIZE/2 - pegGSize)]
+    for i in range(len(pegsIdx)):
+        if pegsIdx == 0:
+           drawPeg([pegGRec[0] + i * int(2.8 * pegGSize), pegGRec[1]], bgColor, pegGSize)
+        else:
+           drawPeg([pegGRec[0] + i * int(2.8 * pegGSize), pegGRec[1]], pegColors[pegsIdx[i]], pegGSize)
+    
+
 def drawpegs():
-    # Draws the six color pegs at the bottom of the screen.
+    # Draws the colors choices at the bottom of the screen.
     numPegs = len(pegColors)
     xmargin = int((WINDOWWIDTH - ((pegSIZE * numPegs) + (pegGAPSIZE * (numPegs - 1)))) / 2)
     for i in range(numPegs):
