@@ -17,7 +17,7 @@ LARGEBOARDSIZE  = int(30 * SIZE_MULTI)
 
 SMALLMAXLIFE  = 10 # number of turns
 MEDIUMMAXLIFE = int(30 * SIZE_MULTI)
-LARGEMAXLIFE  = int(64 * SIZE_MULTI) 
+LARGEMAXLIFE  = int(64 * SIZE_MULTI)
 
 FPS = 30
 WINDOWWIDTH = int(640 * SIZE_MULTI)
@@ -50,7 +50,7 @@ ORANGE   = (255, 128,   0)
 PURPLE   = (138,  43, 226)
 BTGREEN  = (204, 255,   0)
 
-bgColor  = (200, 200, 200) 
+bgColor  = (200, 200, 200)
 rowBgColor=(160, 160, 160)
 
 pegColors = (bgColor, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BTGREEN, BLACK, WHITE)
@@ -58,7 +58,7 @@ pegColorStrs = ("00", "RD", "GR", "BL", "YW", "OR", "PR", "BG", "BK", "WH")
 
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE, A_GUESS 
+    global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE, A_GUESS
     global dummyCurrentNum
     dummyCurrentNum = 0
     A_GUESS = [0, 0, 0, 0, 0]
@@ -76,7 +76,7 @@ def main():
     #   --------------------------
 
     theBoard = [ [0]*numPgPerRow for _ in range(numRows)]
-    
+
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
@@ -123,15 +123,15 @@ def main():
             # last palette button clicked (this check prevents the player
             # from accidentally clicking the same palette twice)
             lastPaletteClicked = pegClicked
-            
+
             drawTry(pegClicked)
-   
+
             theBoard[int(dummyCurrentNum/numPgPerRow)][dummyCurrentNum%numPgPerRow] = pegClicked
             drawBoard(theBoard)
             dummyCurrentNum = dummyCurrentNum + 1
             #A_GUESS = A_GUESS[1:len(A_GUESS)] + [pegClicked]
             #drawOneGuess([150,150], A_GUESS)
-            
+
             #floodAnimation(mainBoard, pegClicked)
             life -= 1
 
@@ -200,8 +200,8 @@ def drawOneGuess(pos, pegsIdx):
                                       | * * * * * |
 
        :param pos: [left, top] where to put on screen
-       :param pegsIdx: five ints. 5 peg color array offsets in pegColors 
-    """ 
+       :param pegsIdx: five ints. 5 peg color array offsets in pegColors
+    """
     #print("-------------------")
     #print("| ", end="")
     #for i in range(len(pegsIdx)):
@@ -216,7 +216,7 @@ def drawOneGuess(pos, pegsIdx):
            drawPeg([pegGRec[0] + i * int(2.8 * pegGSize), pegGRec[1]], bgColor, pegGSize)
         else:
            drawPeg([pegGRec[0] + i * int(2.8 * pegGSize), pegGRec[1]], pegColors[pegsIdx[i]], pegGSize)
-    
+
 
 def drawpegs():
     # Draws the colors choices at the bottom of the screen.
@@ -241,6 +241,6 @@ def getColorOfPaletteAt(x, y):
         if r.collidepoint(x, y):
             return i
     return None # no palette exists at these x, y coordinates
- 
+
 if __name__ == '__main__':
     main()
