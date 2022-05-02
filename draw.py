@@ -23,8 +23,13 @@ FPS = 30
 WINDOWWIDTH = int(640 * SIZE_MULTI)
 WINDOWHEIGHT = int(720 * SIZE_MULTI)
 boxSize = MEDIUMBOXSIZE
+MARGEN_LEFT   = 100
+MARGEN_TOP    = 20
+
 pegGAPSIZE = int(10 * SIZE_MULTI)
 pegSIZE = int(45 * SIZE_MULTI)
+ROW_SIZE = int(53 * SIZE_MULTI)
+
 EASY = 0   # arbitrary but unique value
 MEDIUM = 1 # arbitrary but unique value
 HARD = 2   # arbitrary but unique value
@@ -46,21 +51,25 @@ GREEN    = (  0, 255,   0)
 BLUE     = (  0,   0, 255)
 YELLOW   = (255, 255,   0)
 ORANGE   = (255, 128,   0)
-# PURPLE = (255,   0, 255)
 PURPLE   = (138,  43, 226)
 BTGREEN  = (204, 255,   0)
 
 bgColor  = (200, 200, 200)
 rowBgColor=(160, 160, 160)
-
+#rowBgCSel=(160, 160, 160)
+checkColor=(180, 180, 180) 
+   
 pegColors = (bgColor, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BTGREEN, BLACK, WHITE)
 pegColorStrs = ("00", "RD", "GR", "BL", "YW", "OR", "PR", "BG", "BK", "WH")
 
 
 def main():
     global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE, A_GUESS
-    global dummyCurrentNum
-    dummyCurrentNum = 0
+    global currRow, currPos
+
+    currRow=0
+    currPos=0
+
     A_GUESS = [0, 0, 0, 0, 0]
 
     # create the blank board
@@ -89,15 +98,20 @@ def main():
     mousey = 0
 
     DISPLAYSURF.fill(bgColor)
+    pygame.font.init()
+    font = pygame.font.Font(pygame.font.get_default_font(), 36)
+    #text_surface, rect = font.render("Hello World!", (0, 0, 0))
+    
     drawBoard(theBoard)
 
     while True: # main game loop
         pegClicked = None
+        rowPosClicked = None
         resetGame = False
 
         # Draw the screen.
         # DISPLAYSURF.fill(bgColor)
-        drawpegs()
+        drawColorChoices()
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -108,6 +122,11 @@ def main():
                 mousex, mousey = event.pos
                 # check if a palette button was clicked
                 pegClicked = getColorOfPaletteAt(mousex, mousey)
+
+                # check if in current row
+                if pegClicked == None:
+                    rowPosClicked = getPossitionClicked(mousex, mousey)
+
             elif event.type == KEYDOWN:
                 # support up to 9 palette keys
                 try:
@@ -124,11 +143,9 @@ def main():
             # from accidentally clicking the same palette twice)
             lastPaletteClicked = pegClicked
 
-            drawTry(pegClicked)
-
-            theBoard[int(dummyCurrentNum/numPgPerRow)][dummyCurrentNum%numPgPerRow] = pegClicked
+            theBoard[currRow][currPos] = pegClicked
+            currPos = (currPos + 1) % numPgPerRow
             drawBoard(theBoard)
-            dummyCurrentNum = dummyCurrentNum + 1
             #A_GUESS = A_GUESS[1:len(A_GUESS)] + [pegClicked]
             #drawOneGuess([150,150], A_GUESS)
 
@@ -150,6 +167,14 @@ def main():
             #         flashBorderAnimation(BLACK, mainBoard)
             #     resetGame = True
             #     pygame.time.wait(2000) # pause so the player can suffer in their defeat
+        elif rowPosClicked != None:
+            if rowPosClicked == numPgPerRow:
+               # grade row
+               currRow += 1
+               currPos = 0
+            else:
+               currPos = rowPosClicked
+            drawBoard(theBoard)
 
         if resetGame:
             # start a new game
@@ -192,10 +217,10 @@ def drawBoard(theBoard):
     """
     end = len(theBoard) - 1
     for i in range(end+1):
-       drawOneGuess([100,20 + (i*90)], theBoard[end - i]) # 0 at the bottom
+       drawOneGuess([MARGEN_LEFT, MARGEN_TOP + (i*ROW_SIZE)], theBoard[end - i], (end - i) == currRow) # 0 at the bottom
 
-def drawOneGuess(pos, pegsIdx):
-    """ Draws one sequence of pegsIdx (or blank spzce)
+def drawOneGuess(pos, pegsIdx, isCurrRow):
+    """ Draws one sequence of pegsIdx (or blank space)
        Print a box around ~5 pegsIdx  -------------
                                       | * * * * * |
 
@@ -208,7 +233,10 @@ def drawOneGuess(pos, pegsIdx):
     #   print(pegColorStrs[pegsIdx[i]], end=" ")
     #print(" |")
     #print("-------------------")
-    pygame.draw.rect(DISPLAYSURF, rowBgColor, [pos, [int(1.2*pegSIZE)*len(pegsIdx), pegSIZE]])
+    if isCurrRow:
+       pygame.draw.rect(DISPLAYSURF, checkColor, [pos, [int(1.2*pegSIZE)*len(pegsIdx), pegSIZE]])
+    else:
+       pygame.draw.rect(DISPLAYSURF, rowBgColor, [pos, [int(1.2*pegSIZE)*len(pegsIdx), pegSIZE]])
     pegGSize = 30
     pegGRec = [pos[0] + int(1.5*pegGSize), pos[1] + pegGSize + int(pegSIZE/2 - pegGSize)]
     for i in range(len(pegsIdx)):
@@ -216,9 +244,14 @@ def drawOneGuess(pos, pegsIdx):
            drawPeg([pegGRec[0] + i * int(2.8 * pegGSize), pegGRec[1]], bgColor, pegGSize)
         else:
            drawPeg([pegGRec[0] + i * int(2.8 * pegGSize), pegGRec[1]], pegColors[pegsIdx[i]], pegGSize)
+        if isCurrRow and i == currPos:
+           pygame.draw.line(DISPLAYSURF, GREEN, [pos[0] + i * int(1.13*pegSIZE), pos[1] + pegSIZE -4], [pos[0] + (i + 1) * int(1.13*pegSIZE), pos[1] + pegSIZE -4], 5)
+    #draw check-button if currRow
+    pegGRec = [pos[0] + int(1.5*pegGSize), pos[1] + pegGSize + int(pegSIZE/2 - pegGSize)]
+    if isCurrRow:
+        pygame.draw.rect(DISPLAYSURF, checkColor, (pegGRec[0] + (numPgPerRow * int(1.2 * pegSIZE)), pegGRec[1] - 35, pegSIZE, pegSIZE))
 
-
-def drawpegs():
+def drawColorChoices():
     # Draws the colors choices at the bottom of the screen.
     numPegs = len(pegColors)
     xmargin = int((WINDOWWIDTH - ((pegSIZE * numPegs) + (pegGAPSIZE * (numPegs - 1)))) / 2)
@@ -240,6 +273,19 @@ def getColorOfPaletteAt(x, y):
         r = pygame.Rect(left, top, pegSIZE, pegSIZE)
         if r.collidepoint(x, y):
             return i
+    return None # no palette exists at these x, y coordinates
+
+def getPossitionClicked(x, y):
+    #print(" clicked " +str(x)+ ","+str(y))
+    # check if x is in Row
+    top = MARGEN_TOP + ((numRows - 1 - currRow)*ROW_SIZE)
+    bottom = top + ROW_SIZE
+    #print(" top and bottom " +str(top)+ ","+str(bottom))
+    if y < bottom and y > top:
+       for i in range(numPgPerRow):
+          if x > MARGEN_LEFT + i * int(1.13*pegSIZE) and x < MARGEN_LEFT + (i+1) * int(1.13*pegSIZE):
+             return i
+       return numPgPerRow
     return None # no palette exists at these x, y coordinates
 
 if __name__ == '__main__':
