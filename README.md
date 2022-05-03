@@ -1,2 +1,2 @@
-# pygame_mm draw pegs
-# pygame_mm draw pegs
+# pygame_mm
+My Project to create pygame of Master Mind.
