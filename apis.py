@@ -20,7 +20,7 @@ BLUE   = (  0,   0, 255)
 GREEN  = (  0, 255,   0)
 RED    = (255,   0,   0)
 YELLOW = (255, 255,   0)
-ORANGE = (255, 128,   0)
+ORANGE = (255, 98,   0)
 PURPLE = (200,   0, 220)
  
 # Set the height and width of the screen

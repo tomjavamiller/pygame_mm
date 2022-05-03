@@ -57,8 +57,8 @@ BTGREEN  = (204, 255,   0)
 bgColor  = (200, 200, 200)
 rowBgColor=(160, 160, 160)
 #rowBgCSel=(160, 160, 160)
-checkColor=(180, 180, 180) 
-   
+checkColor=(180, 180, 180)
+
 pegColors = (bgColor, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, BTGREEN, BLACK, WHITE)
 pegColorStrs = ("00", "RD", "GR", "BL", "YW", "OR", "PR", "BG", "BK", "WH")
 
@@ -101,7 +101,7 @@ def main():
     pygame.font.init()
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
     #text_surface, rect = font.render("Hello World!", (0, 0, 0))
-    
+
     drawBoard(theBoard)
 
     while True: # main game loop
