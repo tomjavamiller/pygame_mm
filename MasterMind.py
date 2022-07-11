@@ -197,7 +197,7 @@ def checkForQuit():
         pygame.event.post(event) # put the other KEYUP event objects back
 
 def drawPeg(pos, color, size=40):
-    pygame.draw.circle(DISPLAYSURF, color, pos, size  )
+    pygame.draw.circle(DISPLAYSURF, color, pos, size)
     # for i in range(1,size):
     #    wvalue = int(i*250/size)
     #    pygame.draw.circle(DISPLAYSURF, (max(wvalue,color[0]),max(wvalue,color[1]),max(wvalue,color[2])), pos, size-i )
