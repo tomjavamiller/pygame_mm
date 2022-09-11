@@ -1,5 +1,3 @@
-# draw a board
-
 import random, sys, pygame
 from pygame.locals import *
 
@@ -67,12 +65,14 @@ def main():
     global FPSCLOCK, DISPLAYSURF, LOGOIMAGE, SPOTIMAGE, SETTINGSIMAGE, SETTINGSBUTTONIMAGE, RESETBUTTONIMAGE, A_GUESS
     global currRow, currPos
 
+    # current row and position in row that User is choosing (0 row is bottom; 0 pos is left-most)
     currRow=0
     currPos=0
 
     A_GUESS = [0, 0, 0, 0, 0]
 
     # create the blank board
+    #row  positions
     #   --------------------------
     # # | 0  1 ... numPgPerRow-1 |  numRows-1
     # .
@@ -83,14 +83,14 @@ def main():
     # 1 | 0  1 ... numPgPerRow-1 |
     # 0 | 0  1 ... numPgPerRow-1 |
     #   --------------------------
-
+    #        put a row or [0,0,0,0,0] in for numRows:
     theBoard = [ [0]*numPgPerRow for _ in range(numRows)]
 
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 
-    pygame.display.set_caption('Draw Board')
+    pygame.display.set_caption('MasterMind <-> Server API')
     life = maxLife
     lastPaletteClicked = None
 
@@ -198,6 +198,7 @@ def checkForQuit():
 
 def drawPeg(pos, color, size=40):
     pygame.draw.circle(DISPLAYSURF, color, pos, size)
+    # the following was code to make peg more dome-like
     # for i in range(1,size):
     #    wvalue = int(i*250/size)
     #    pygame.draw.circle(DISPLAYSURF, (max(wvalue,color[0]),max(wvalue,color[1]),max(wvalue,color[2])), pos, size-i )
@@ -210,6 +211,15 @@ def drawTry(tryNum):
     #pygame.draw.rect(DISPLAYSURF, pegColors[i], (left, top, pegSIZE, pegSIZE))
     pygame.display.update()
     FPSCLOCK.tick(FPS)
+
+def text_object(text, font):
+    textSurface = font.render(text, True, BLACK)
+    return textSurface, textSurface.get_rect()
+
+def drawText(text,x,y):
+    textSurf, textRect = text_object(text, pygame.font.Font('freesansbold.ttf',12))
+    textRect.center = (x,y)
+    DISPLAYSURF.blit(textSurf, textRect) 
 
 def drawBoard(theBoard):
     """ Draws the main board from the matrix of ints
@@ -233,11 +243,13 @@ def drawOneGuess(pos, pegsIdx, isCurrRow):
     #   print(pegColorStrs[pegsIdx[i]], end=" ")
     #print(" |")
     #print("-------------------")
+
     if isCurrRow:
        pygame.draw.rect(DISPLAYSURF, checkColor, [pos, [int(1.2*pegSIZE)*len(pegsIdx), pegSIZE]])
     else:
        pygame.draw.rect(DISPLAYSURF, rowBgColor, [pos, [int(1.2*pegSIZE)*len(pegsIdx), pegSIZE]])
     pegGSize = 30
+    # first peg position:
     pegGRec = [pos[0] + int(1.5*pegGSize), pos[1] + pegGSize + int(pegSIZE/2 - pegGSize)]
     for i in range(len(pegsIdx)):
         if pegsIdx == 0:
@@ -249,7 +261,12 @@ def drawOneGuess(pos, pegsIdx, isCurrRow):
     #draw check-button if currRow
     pegGRec = [pos[0] + int(1.5*pegGSize), pos[1] + pegGSize + int(pegSIZE/2 - pegGSize)]
     if isCurrRow:
-        pygame.draw.rect(DISPLAYSURF, checkColor, (pegGRec[0] + (numPgPerRow * int(1.2 * pegSIZE)), pegGRec[1] - 35, pegSIZE, pegSIZE))
+        # top left
+        chkGradBox = [pegGRec[0] + (numPgPerRow * int(1.2 * pegSIZE)), pegGRec[1] - 35]
+        pygame.draw.rect(DISPLAYSURF, checkColor, (chkGradBox[0], chkGradBox[1], pegSIZE, pegSIZE))
+
+        #pygame.draw.rect(DISPLAYSURF, checkColor, (pegGRec[0] + (numPgPerRow * int(1.2 * pegSIZE)), pegGRec[1] - 35, pegSIZE, pegSIZE))
+        drawText("check", chkGradBox[0] + int(pegSIZE/2), chkGradBox[1] + int(pegSIZE/2))
 
 def drawColorChoices():
     # Draws the colors choices at the bottom of the screen.
